@@ -34,9 +34,7 @@ jobs:
           DIFF=$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.question.difficulty // "?"')
           LEET_LINK="https://leetcode.com$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.link // ""')"
 
-          MSG="Pas encore de commit aujourd'hui sur \`master-c-cpp-python\` 👀
-LeetCode du jour : **${TITLE}** (${DIFF})
-${LEET_LINK}"
+          MSG=$(printf "Pas encore de commit aujourd'hui sur \`master-c-cpp-python\` 👀\nLeetCode du jour : **%s** (%s)\n%s" "$TITLE" "$DIFF" "$LEET_LINK")
 
           curl -s -H "Content-Type: application/json" \
             -d "$(jq -n --arg content "$MSG" '{content: $content}')" \
