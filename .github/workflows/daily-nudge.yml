@@ -1,0 +1,43 @@
+name: Daily LeetCode nudge
+
+on:
+  schedule:
+    # Every 3h from 7h to 22h Paris time (CEST = UTC+2): 5,8,11,14,17,20 UTC
+    - cron: '0 5,8,11,14,17,20 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  nudge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if already committed today
+        id: check
+        run: |
+          TODAY=$(date -u +%Y-%m-%dT00:00:00)
+          COUNT=$(git log --since="$TODAY" --oneline | wc -l)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Send Discord reminder
+        if: steps.check.outputs.count == '0'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          RESPONSE=$(curl -s https://leetcode.com/graphql \
+            -H "Content-Type: application/json" \
+            -d '{"query":"query { activeDailyCodingChallengeQuestion { link question { title difficulty } } }"}')
+
+          TITLE=$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.question.title // "indisponible"')
+          DIFF=$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.question.difficulty // "?"')
+          LEET_LINK="https://leetcode.com$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.link // ""')"
+
+          MSG="Pas encore de commit aujourd'hui sur \`master-c-cpp-python\` 👀
+LeetCode du jour : **${TITLE}** (${DIFF})
+${LEET_LINK}"
+
+          curl -s -H "Content-Type: application/json" \
+            -d "$(jq -n --arg content "$MSG" '{content: $content}')" \
+            "$DISCORD_WEBHOOK_URL"
