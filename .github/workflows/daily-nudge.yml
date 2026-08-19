@@ -26,15 +26,11 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          RESPONSE=$(curl -s https://leetcode.com/graphql \
-            -H "Content-Type: application/json" \
-            -d '{"query":"query { activeDailyCodingChallengeQuestion { link question { title difficulty } } }"}')
+          CHALLENGE=$(python3 scripts/pick_challenge.py)
+          TITLE=$(printf '%s' "$CHALLENGE" | sed -n '1p')
+          LINK=$(printf '%s' "$CHALLENGE" | sed -n '2p')
 
-          TITLE=$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.question.title // "indisponible"')
-          DIFF=$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.question.difficulty // "?"')
-          LEET_LINK="https://leetcode.com$(echo "$RESPONSE" | jq -r '.data.activeDailyCodingChallengeQuestion.link // ""')"
-
-          MSG=$(printf "Pas encore de commit aujourd'hui sur \`master-c-cpp-python\` 👀\nLeetCode du jour : **%s** (%s)\n%s" "$TITLE" "$DIFF" "$LEET_LINK")
+          MSG=$(printf "Pas encore de commit aujourd'hui sur \`c-cpp-python-mastery\` 👀\nDefi du jour : **%s**\n%s" "$TITLE" "$LINK")
 
           curl -s -H "Content-Type: application/json" \
             -d "$(jq -n --arg content "$MSG" '{content: $content}')" \
