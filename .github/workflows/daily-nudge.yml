@@ -5,6 +5,11 @@ on:
     # Every 3h from 7h to 22h Paris time (CEST = UTC+2): 5,8,11,14,17,20 UTC
     - cron: '0 5,8,11,14,17,20 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Send even if already committed today'
+        type: boolean
+        default: false
 
 jobs:
   nudge:
@@ -22,7 +27,7 @@ jobs:
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
       - name: Send Discord reminder
-        if: steps.check.outputs.count == '0'
+        if: steps.check.outputs.count == '0' || github.event.inputs.force == 'true'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -30,7 +35,12 @@ jobs:
           TITLE=$(printf '%s' "$CHALLENGE" | sed -n '1p')
           LINK=$(printf '%s' "$CHALLENGE" | sed -n '2p')
 
-          MSG=$(printf "Pas encore de commit aujourd'hui sur \`c-cpp-python-mastery\` 👀\nDefi du jour : **%s**\n%s" "$TITLE" "$LINK")
+          if [ "${{ steps.check.outputs.count }}" = "0" ]; then
+            PREFIX="Pas encore de commit aujourd'hui sur \`c-cpp-python-mastery\` 👀"
+          else
+            PREFIX="Defi bonus sur \`c-cpp-python-mastery\` (demande manuelle) :"
+          fi
+          MSG=$(printf "%s\nDefi du jour : **%s**\n%s" "$PREFIX" "$TITLE" "$LINK")
 
           curl -s -H "Content-Type: application/json" \
             -d "$(jq -n --arg content "$MSG" '{content: $content}')" \
