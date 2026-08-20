@@ -40,7 +40,7 @@ jobs:
           else
             PREFIX="Defi bonus sur \`c-cpp-python-mastery\` (demande manuelle) :"
           fi
-          MSG=$(printf "%s\nDefi du jour : **%s**\n%s" "$PREFIX" "$TITLE" "$LINK")
+          MSG=$(printf "<@277728026790199296> %s\nDefi du jour : **%s**\n%s" "$PREFIX" "$TITLE" "$LINK")
 
           curl -s -H "Content-Type: application/json" \
             -d "$(jq -n --arg content "$MSG" '{content: $content}')" \
