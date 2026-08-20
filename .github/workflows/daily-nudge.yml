@@ -36,9 +36,9 @@ jobs:
           LINK=$(printf '%s' "$CHALLENGE" | sed -n '2p')
 
           if [ "${{ steps.check.outputs.count }}" = "0" ]; then
-            PREFIX="Pas encore de commit aujourd'hui sur \`c-cpp-python-mastery\` 👀"
+            PREFIX="Pas encore de commit aujourd'hui sur \`c-mastery\` 👀"
           else
-            PREFIX="Defi bonus sur \`c-cpp-python-mastery\` (demande manuelle) :"
+            PREFIX="Defi bonus sur \`c-mastery\` (demande manuelle) :"
           fi
           MSG=$(printf "<@277728026790199296> %s\nDefi du jour : **%s**\n%s" "$PREFIX" "$TITLE" "$LINK")
 
