@@ -13,7 +13,11 @@ def leetcode():
         data=json.dumps(
             {"query": "query { activeDailyCodingChallengeQuestion { link question { title difficulty } } }"}
         ).encode(),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/128.0 Safari/537.36",
+        },
         method="POST",
     )
     with urllib.request.urlopen(req) as resp:
@@ -37,7 +41,10 @@ def advent_of_code():
 if month == 12 and 1 <= day <= 25:
     label, link = advent_of_code()
 elif doy % 2 == 0:
-    label, link = leetcode()
+    try:
+        label, link = leetcode()
+    except Exception:
+        label, link = project_euler()
 else:
     label, link = project_euler()
 
